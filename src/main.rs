@@ -12,7 +12,14 @@ mod menus;
 mod screens;
 mod theme;
 
-use bevy::{asset::AssetMetaCheck, prelude::*};
+use bevy::{
+    asset::AssetMetaCheck,
+    camera::*,
+    prelude::*,
+};
+
+use avian2d::prelude::*;
+use bevy_ecs_tiled::prelude::*;
 
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()
@@ -24,7 +31,8 @@ impl Plugin for AppPlugin {
     fn build(&self, app: &mut App) {
         // Add Bevy plugins.
         app.add_plugins(
-            DefaultPlugins
+            DefaultPlugins.build()
+                .set(ImagePlugin::default_nearest())
                 .set(AssetPlugin {
                     // Wasm builds will check for meta files (that don't exist) if this isn't set.
                     // This causes errors and even panics on web build on itch.
@@ -42,6 +50,11 @@ impl Plugin for AppPlugin {
                     ..default()
                 }),
         );
+
+        app.add_plugins(TiledPlugin::default())
+            .add_plugins(TiledPhysicsPlugin::<TiledPhysicsAvianBackend>::default())
+            .add_plugins(PhysicsPlugins::default().with_length_unit(100.0))
+            .add_plugins(PhysicsDebugPlugin);     
 
         // Add other plugins.
         app.add_plugins((
@@ -97,5 +110,13 @@ struct Pause(pub bool);
 struct PausableSystems;
 
 fn spawn_camera(mut commands: Commands) {
-    commands.spawn((Name::new("Camera"), Camera2d));
+    commands.spawn((
+        Name::new("Camera"),
+        Camera2d,
+        Projection::Orthographic(OrthographicProjection {
+            scaling_mode: ScalingMode::WindowSize,
+            scale: 0.5,
+            ..OrthographicProjection::default_2d()
+        }),
+    ));
 }

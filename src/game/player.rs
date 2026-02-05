@@ -5,10 +5,16 @@ use bevy::{
     prelude::*,
 };
 
+use avian2d::prelude::*;
+
 use crate::{
     AppSystems, PausableSystems,
     asset_tracking::LoadResource,
     game::{
+        level::{
+            PlayerMarker,
+            GRAVITY_SCALE,
+        },
         animation::PlayerAnimation,
         movement::{MovementController, ScreenWrap},
     },
@@ -48,13 +54,13 @@ pub fn player(
                 index: player_animation.get_atlas_index(),
             },
         ),
-        Transform::from_scale(Vec2::splat(8.0).extend(1.0)),
+        //Transform::from_scale(Vec2::splat(8.0).extend(1.0)),
         MovementController {
             max_speed,
             ..default()
         },
         ScreenWrap,
-        player_animation,
+        player_animation,    
     )
 }
 
