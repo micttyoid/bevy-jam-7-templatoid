@@ -1,4 +1,23 @@
-# Rust builds
+# Rust
 /target
-# This file contains environment-specific configuration like linker settings
 .cargo/config.toml
+
+# OS - macOS
+.DS_Store
+
+# OS - FreeBSD
+*.core
+
+# Web
+dist/
+
+# Security/Environment
+*.env
+.env.*
+.venv
+env/
+venv/
+*.pem
+
+# Random mess
+.idea
