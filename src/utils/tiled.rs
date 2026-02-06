@@ -19,18 +19,34 @@ use std::sync::Arc;
 
 use bevy::log::{info, warn};
 use bevy::{
-    asset::{AssetLoader, io::Reader},
+    asset::{
+        AssetLoader,
+        io::Reader,
+    },
     platform::collections::HashMap,
     prelude::{
+        App,
         Added, Asset, AssetApp, AssetEvent, AssetId, Assets, Bundle, Commands, Component, Entity,
         GlobalTransform, Handle, Image, MessageReader, Plugin, Query, Res, Transform, Update,
     },
     reflect::TypePath,
 };
+use avian2d::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
+
+use tiled::{
+    ObjectShape,
+};
 use thiserror::Error;
 
-#[allow(dead_code)]
+
+pub(super) fn plugin(app: &mut App) {
+    app.init_asset::<TiledMap>()
+        .register_asset_loader(TiledLoader)
+        .add_systems(Update, process_loaded_maps);
+}
+
+/*
 #[derive(Default)]
 pub struct TiledMapPlugin;
 
@@ -41,12 +57,12 @@ impl Plugin for TiledMapPlugin {
             .add_systems(Update, process_loaded_maps);
     }
 }
+*/
 
-#[allow(dead_code)]
 #[derive(TypePath, Asset)]
 pub struct TiledMap {
     pub map: tiled::Map,
-
+    pub pre_colliders: HashMap<tiled::TileId, Vec<(f32, f32, f32, f32)>>, // by tiles
     pub tilemap_textures: HashMap<usize, TilemapTexture>,
 
     // The offset into the tileset_images for each tile id within each tileset.
@@ -103,7 +119,6 @@ impl tiled::ResourceReader for BytesResourceReader {
 #[derive(TypePath)]
 pub struct TiledLoader;
 
-#[allow(dead_code)]
 #[derive(Debug, Error)]
 pub enum TiledAssetLoaderError {
     /// An [IO](std::io) Error
@@ -129,10 +144,40 @@ impl AssetLoader for TiledLoader {
             tiled::DefaultResourceCache::new(),
             BytesResourceReader::new(&bytes),
         );
+        // This is currently using `xml-rs`
         let map = loader
             .load_tmx_map(load_context.path().path())
             .map_err(|e| std::io::Error::other(format!("Could not load TMX map: {e}")))?;
 
+        // TODO: bundle-wise solution
+        let mut pre_colliders = HashMap::<tiled::TileId, Vec<(f32, f32, f32, f32)>>::new();
+        use ObjectShape::*;
+        for tileset in map.tilesets() {
+            for (tile_id, tile_data) in tileset.tiles() {
+                if let Some(obj_layer_data_collision) = &tile_data.collision {
+                    let mut rects = Vec::new();
+                    for collision_obj_data in obj_layer_data_collision.object_data() {
+                        println!("Object data shape: {:?}", collision_obj_data.shape);
+                        match collision_obj_data.shape {
+                            Rect {width, height} => {
+                                rects.push((
+                                    collision_obj_data.x,
+                                    collision_obj_data.y,
+                                    width,
+                                    height,
+                                ));
+
+                            },
+                            // TODO other shapes
+                            _ => { },
+                        }
+                    }
+                    if !rects.is_empty() {
+                        pre_colliders.insert(tile_id, rects);
+                    }
+                }
+            }
+        }
         let mut tilemap_textures = HashMap::default();
         #[cfg(not(feature = "atlas"))]
         let mut tile_image_offsets = HashMap::default();
@@ -193,6 +238,7 @@ impl AssetLoader for TiledLoader {
 
         let asset_map = TiledMap {
             map,
+            pre_colliders,
             tilemap_textures,
             #[cfg(not(feature = "atlas"))]
             tile_image_offsets,
@@ -208,7 +254,6 @@ impl AssetLoader for TiledLoader {
     }
 }
 
-#[allow(dead_code)]
 fn process_loaded_maps(
     mut commands: Commands,
     mut map_events: MessageReader<AssetEvent<TiledMap>>,
@@ -370,18 +415,31 @@ fn process_loaded_maps(
 
                                 let tile_pos = TilePos { x, y };
                                 let tile_entity = commands
-                                    .spawn(TileBundle {
-                                        position: tile_pos,
-                                        tilemap_id: TilemapId(layer_entity),
-                                        texture_index: TileTextureIndex(texture_index),
-                                        flip: TileFlip {
-                                            x: layer_tile_data.flip_h,
-                                            y: layer_tile_data.flip_v,
-                                            d: layer_tile_data.flip_d,
+                                    .spawn((
+                                        TileBundle {
+                                            position: tile_pos,
+                                            tilemap_id: TilemapId(layer_entity),
+                                            texture_index: TileTextureIndex(texture_index),
+                                            flip: TileFlip {
+                                                x: layer_tile_data.flip_h,
+                                                y: layer_tile_data.flip_v,
+                                                d: layer_tile_data.flip_d,
+                                            },
+                                            ..Default::default()
                                         },
-                                        ..Default::default()
-                                    })
+                                    ))
                                     .id();
+                                // TODO: bundle-wise work instead
+                                if let Some(rects) = tiled_map.pre_colliders.get(&layer_tile.id()) {
+                                    for rect in rects {
+                                        let (x,y,width, height) = *rect;
+                                        commands.entity(tile_entity).insert((
+
+                                            RigidBody::Static,
+                                            Collider::rectangle(width, height),
+                                        ));
+                                    }
+                                }
                                 tile_storage.set(&tile_pos, tile_entity);
                             }
                         }

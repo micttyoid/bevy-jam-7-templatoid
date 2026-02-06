@@ -22,6 +22,9 @@ use bevy::{
 use avian2d::prelude::*;
 use bevy_ecs_tilemap::prelude::*;
 
+
+//use bevy_ecs_tiled::prelude::*;
+
 fn main() -> AppExit {
     App::new().add_plugins(AppPlugin).run()
 }
@@ -51,14 +54,15 @@ impl Plugin for AppPlugin {
                     ..default()
                 }),
         );
-        app.add_plugins(TilemapPlugin)
-            .add_plugins(utils::tiled::TiledMapPlugin);
-        /* 
-            .add_plugins(PhysicsPlugins::default().with_length_unit(100.0));
-            #[cfg(debug_assertions)] {
-                app.add_plugins(PhysicsDebugPlugin);
-            }
-        */
+        
+        app.add_plugins(TilemapPlugin);
+        app.add_plugins(utils::plugin);
+
+        app.add_plugins(PhysicsPlugins::default().with_length_unit(100.0));
+        #[cfg(debug_assertions)] {
+            app.add_plugins(PhysicsDebugPlugin);
+        }
+
         // Add other plugins.
         app.add_plugins((
             asset_tracking::plugin,

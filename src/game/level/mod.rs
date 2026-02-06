@@ -1,15 +1,16 @@
 use avian2d::prelude::*;
 use bevy::prelude::*;
+use tiled::{
+    PropertyValue,
+};
 
 use crate::{
     asset_tracking::LoadResource,
     audio::music,
     game::player::{PlayerAssets, player},
     screens::Screen,
-    utils::tiled,
+    utils::tiled as utils_tiled,
 };
-
-
 
 
 pub(super) fn plugin(app: &mut App) {
@@ -38,16 +39,13 @@ impl FromWorld for LevelAssets {
 }
 
 fn startup(mut commands: Commands, asset_server: Res<AssetServer>) {
-    let map_handle = tiled::TiledMapHandle(
-        asset_server.load("map_tile-16x16.tmx")
-    );
-
-    commands.spawn(tiled::TiledMapBundle {
+    let map = asset_server.load("map_tile-16x16.tmx");
+    let map_handle = utils_tiled::TiledMapHandle(map);
+    commands.spawn(utils_tiled::TiledMapBundle {
         tiled_map: map_handle,
         ..Default::default()
     });
 }
-
 
 /// A system that spawns the main level.
 pub fn spawn_level(
@@ -201,5 +199,4 @@ fn map_rotate(
         }
     }
 }
-
 */
