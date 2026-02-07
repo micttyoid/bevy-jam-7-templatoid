@@ -25,7 +25,7 @@ use bevy::{
     },
     platform::collections::HashMap,
     prelude::{
-        App,
+        App, Vec3,
         Added, Asset, AssetApp, AssetEvent, AssetId, Assets, Bundle, Commands, Component, Entity,
         GlobalTransform, Handle, Image, MessageReader, Plugin, Query, Res, Transform, Update,
     },
@@ -432,9 +432,14 @@ fn process_loaded_maps(
                                 // TODO: bundle-wise work instead
                                 if let Some(rects) = tiled_map.pre_colliders.get(&layer_tile.id()) {
                                     for rect in rects {
-                                        let (x,y,width, height) = *rect;
-                                        commands.entity(tile_entity).insert((
+                                        let (_x, _y, width, height) = *rect;
 
+                                        commands.entity(tile_entity).insert((
+                                           Transform::from_scale(
+                                                Vec3::new(1., 1., 1.)
+                                            ).with_translation(
+                                                Vec3::new((x as f32) + offset_x,  (y as f32) - offset_y, 100.0),
+                                            ),
                                             RigidBody::Static,
                                             Collider::rectangle(width, height),
                                         ));
