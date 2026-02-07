@@ -55,16 +55,15 @@ impl Plugin for AppPlugin {
                 }),
         );
         
-        app.add_plugins(TilemapPlugin);
-        app.add_plugins(utils::plugin);
-
         app.add_plugins(PhysicsPlugins::default().with_length_unit(100.0));
         #[cfg(debug_assertions)] {
             app.add_plugins(PhysicsDebugPlugin);
         }
+        app.add_plugins(TilemapPlugin);
 
         // Add other plugins.
         app.add_plugins((
+            utils::plugin,
             asset_tracking::plugin,
             audio::plugin,
             game::plugin,

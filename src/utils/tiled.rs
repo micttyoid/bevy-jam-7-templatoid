@@ -18,6 +18,7 @@ use std::path::Path;
 use std::sync::Arc;
 
 use bevy::log::{info, warn};
+use bevy::math::Vec2;
 use bevy::{
     asset::{
         AssetLoader,
@@ -430,15 +431,21 @@ fn process_loaded_maps(
                                     ))
                                     .id();
                                 // TODO: bundle-wise work instead
+                                if tileset.spacing != 0 {
+                                    panic!("Don't do that please ;o");
+                                };
+
+                                let tile_width = tileset.tile_width;
+                                let tile_height = tileset.tile_height;
+                                let half_tile_width = tileset.tile_width as f32 / 2.0;
+                                let half_tile_height = tileset.tile_height as f32 /2.0;
                                 if let Some(rects) = tiled_map.pre_colliders.get(&layer_tile.id()) {
                                     for rect in rects {
                                         let (_x, _y, width, height) = *rect;
-
                                         commands.entity(tile_entity).insert((
-                                           Transform::from_scale(
-                                                Vec3::new(1., 1., 1.)
-                                            ).with_translation(
-                                                Vec3::new((x as f32) + offset_x,  (y as f32) - offset_y, 100.0),
+                                            Transform::from_translation(
+                                                Vec3::new(-1.* (tile_width * tiled_map.map.width) as f32/2.0, -1. * (tile_height * tiled_map.map.height) as f32/2.0, 0.) +
+                                                Vec3::new(half_tile_width + (tile_width * x) as f32, half_tile_height + (tile_height * y) as f32 , 0.0),
                                             ),
                                             RigidBody::Static,
                                             Collider::rectangle(width, height),
