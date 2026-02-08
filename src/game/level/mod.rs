@@ -1,24 +1,15 @@
-use avian2d::prelude::*;
 use bevy::prelude::*;
-use tiled::{
-    PropertyValue,
-};
 
 use crate::{
     asset_tracking::LoadResource,
     audio::music,
     game::player::{PlayerAssets, player},
     screens::Screen,
-    utils::tiled as utils_tiled,
 };
-
 
 pub(super) fn plugin(app: &mut App) {
     app.load_resource::<LevelAssets>();
-    //app.add_systems(Startup, startup);
-    //.add_systems(Update, move_player);
 }
-
 
 #[derive(Resource, Asset, Clone, Reflect)]
 #[reflect(Resource)]
@@ -41,7 +32,6 @@ pub fn spawn_level(
     mut commands: Commands,
     level_assets: Res<LevelAssets>,
     player_assets: Res<PlayerAssets>,
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
     commands.spawn((
         Name::new("Level"),
@@ -49,7 +39,7 @@ pub fn spawn_level(
         Visibility::default(),
         DespawnOnExit(Screen::Gameplay),
         children![
-            player(100.0, &player_assets, &mut texture_atlas_layouts),
+            player(100.0, &player_assets),
             (
                 Name::new("Gameplay Music"),
                 music(level_assets.music.clone())
@@ -57,10 +47,6 @@ pub fn spawn_level(
         ],
     ));
 }
-
-// A 'player' marker component
-#[derive(Default, Clone, Component)]
-pub struct PlayerMarker;
 
 // A simplistic controller
 /*
