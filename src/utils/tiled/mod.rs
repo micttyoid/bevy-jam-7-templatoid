@@ -42,8 +42,10 @@ use tiled::{
 };
 
 use crate::{
-    // TODO: asset_tracking::LoadResource,
-    game::player::PLAYER_Z_TRANSLATION,
+    game::{
+        player::PLAYER_Z_TRANSLATION,
+        level::Level,
+    },
     utils::tiled::shaper::{
         PreSharedShape,
         shaper,
@@ -58,21 +60,23 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 /// [`crate:::screens::gameplay`]
-pub fn spawn_tiled_map <const MAP_NUMBER: usize>(
+pub fn spawn_tiled_map (
     mut commands: Commands,
+    current_level: Res<State<Level>>,
     asset_server: Res<AssetServer>,
 ) {
-    let asset_path = match MAP_NUMBER {
-        1 => "map1.tile-16x16.tmx",
-        2 => "map2.tile-16x16.tmx",
-        _ => {
-            panic!("No such map number exists");
-        },
+    let asset_path = match current_level.get() {
+        Level::Foo =>  "map1.tile-16x16.tmx",
+        Level::Bar =>  "map2.tile-16x16.tmx",
+        Level::Baz =>  "map2.tile-16x16.tmx",
+        Level::Qux =>  "map2.tile-16x16.tmx",
+        Level::Quux => "map2.tile-16x16.tmx",
     };
     commands.spawn(TiledMapBundle {
         tiled_map: TiledMapHandle(asset_server.load(asset_path)),
         ..Default::default()
     });
+
 }
 
 #[derive(TypePath, Asset)]

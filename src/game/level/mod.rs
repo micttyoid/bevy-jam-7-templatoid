@@ -12,18 +12,57 @@ use crate::{
         player::{player},
         animation::AnimationAssets,
         level::{
-            enemies::{basic_enemy, /* EnemyAssets, */},
+            enemies::{basic_enemy, basic_boss,},
         },
     },
     screens::Screen,
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.load_resource::<LevelAssets>();
-    app.add_plugins((
-        enemies::plugin,
-        projectiles::plugin,
-    ));
+    app
+        .load_resource::<LevelAssets>()
+        .init_state::<Level>()
+        .add_plugins((
+            enemies::plugin,
+            projectiles::plugin,
+        ));
+}
+
+/// GDD "pre defined multiple maps/levels(maybe 4-5?)"
+/// TODO: Please name the levels according to the concept! ;o
+#[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, SubStates, Reflect,)]
+#[source(Screen = Screen::Gameplay)]
+#[repr(u8)]
+pub enum Level {
+    #[default]
+    Foo,
+    Bar,
+    Baz,
+    Qux,
+    Quux,
+}
+
+impl Level {
+    pub const LAST_LEVEL: Level = Level::Quux;
+
+    pub fn next(&self) -> Self {
+        use Level::*;
+        match self {
+            Foo => Bar,
+            Bar => Baz,
+            Baz => Qux,
+            Qux => Quux,
+            Quux => panic!("No more next level: It is the last level"),
+        }
+    }
+
+    pub fn is_last(&self) -> bool {
+        if *self == Self::LAST_LEVEL {
+            true
+        } else {
+            false
+        }
+    }
 }
 
 #[derive(Resource, Asset, Clone, Reflect)]
@@ -44,152 +83,34 @@ impl FromWorld for LevelAssets {
 
 /// A system that spawns the main level.
 pub fn spawn_level(
+    current_level: Res<State<Level>>,
     mut commands: Commands,
     level_assets: Res<LevelAssets>,
     anim_assets: Res<AnimationAssets>,
     mut time: ResMut<Time<Physics>>,
 ) {
+    match current_level.get() {
+        Level::Foo => {
+            commands.spawn((
+                Name::new("Level"),
+                Transform::default(),
+                Visibility::default(),
+                DespawnOnExit(Screen::Gameplay),
+                children![
+                    player(100.0, &anim_assets),
+                    basic_enemy((2., 5.).into(), &anim_assets),
+                    basic_enemy((4., 5.).into(), &anim_assets),
+                    basic_boss((6., 5.).into(), &anim_assets),
+                    (
+                        Name::new("Gameplay Music"),
+                        music(level_assets.music.clone())
+                    )
+                ],
+            ));
+        }
+        _ => {
+            unimplemented!();
+        }
+    }
     time.unpause();
-    commands.spawn((
-        Name::new("Level"),
-        Transform::default(),
-        Visibility::default(),
-        DespawnOnExit(Screen::Gameplay),
-        children![
-            player(100.0, &anim_assets),
-            basic_enemy((2., 5.).into(), &anim_assets),
-            basic_enemy((4., 5.).into(), &anim_assets),
-            (
-                Name::new("Gameplay Music"),
-                music(level_assets.music.clone())
-            )
-        ],
-    ));
 }
-
-// A simplistic controller
-/*
-pub const MOVE_SPEED: f32 = 200.;
-fn move_player(
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut player: Query<&mut LinearVelocity, With<PlayerMarker>>,
-) {
-    for mut rb_vel in player.iter_mut() {
-        let mut direction = Vec2::ZERO;
-
-        if keyboard_input.pressed(KeyCode::ArrowRight) {
-            direction += Vec2::new(1.0, 0.0);
-        }
-
-        if keyboard_input.pressed(KeyCode::ArrowLeft) {
-            direction -= Vec2::new(1.0, 0.0);
-        }
-
-        if keyboard_input.pressed(KeyCode::ArrowUp) {
-            direction += Vec2::new(0.0, 1.0);
-        }
-
-        if keyboard_input.pressed(KeyCode::ArrowDown) {
-            direction -= Vec2::new(0.0, 1.0);
-        }
-
-        if direction != Vec2::ZERO {
-            direction /= direction.length();
-        }
-
-        rb_vel.0 = direction * MOVE_SPEED;
-    }
-}
-*/
-/*
-#[derive(Default)]
-struct HelperPlugin;
-
-impl Plugin for HelperPlugin {
-    fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_plugins((
-            //EguiPlugin::default(),
-            //WorldInspectorPlugin::default().run_if(input_toggle_active(false, KeyCode::F1)),
-        ));
-         app.add_systems(Update, camera_movement);
-        app.add_systems(Update, map_rotate);
-    }
-}
-
-const MINIMUM_SCALE: f32 = 0.1;
-
-// A simple camera system for moving and zooming the camera.
-fn camera_movement(
-    time: Res<Time>,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut query: Query<(&mut Transform, &mut Projection), With<Camera>>,
-) {
-    for (mut transform, mut projection) in query.iter_mut() {
-        let mut direction = Vec3::ZERO;
-        let Projection::Orthographic(ref mut ortho) = *projection else {
-            continue;
-        };
-
-        if keyboard_input.pressed(KeyCode::ArrowLeft) {
-            direction -= Vec3::new(1.0, 0.0, 0.0);
-        }
-
-        if keyboard_input.pressed(KeyCode::ArrowRight) {
-            direction += Vec3::new(1.0, 0.0, 0.0);
-        }
-
-        if keyboard_input.pressed(KeyCode::ArrowUp) {
-            direction += Vec3::new(0.0, 1.0, 0.0);
-        }
-
-        if keyboard_input.pressed(KeyCode::ArrowDown) {
-            direction -= Vec3::new(0.0, 1.0, 0.0);
-        }
-
-        if keyboard_input.pressed(KeyCode::KeyZ) {
-            ortho.scale += 0.1;
-        }
-
-        if keyboard_input.pressed(KeyCode::KeyX) {
-            ortho.scale -= 0.1;
-        }
-
-        if ortho.scale < MINIMUM_SCALE {
-            ortho.scale = MINIMUM_SCALE;
-        }
-
-        let z = transform.translation.z;
-        transform.translation += time.delta_secs() * direction * 500.;
-        // Important! We need to restore the Z values when moving the camera around.
-        // Bevy has a specific camera setup and this can mess with how our layers are shown.
-        transform.translation.z = z;
-    }
-}
-
-const ROTATION_SPEED: f32 = 45.;
-
-#[allow(clippy::type_complexity)]
-fn map_rotate(
-    time: Res<Time>,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
-    mut world_or_map_query: Query<
-        (Option<&ChildOf>, Option<&TiledMap>, &mut Transform),
-        Or<(With<TiledMap>, With<TiledWorld>)>,
-    >,
-) {
-    for (parent, map_marker, mut transform) in world_or_map_query.iter_mut() {
-        // If we have a map with a parent entity, it probably means this map belongs to a world
-        // and we should rotate the world instead of the map
-        if parent.is_some() && map_marker.is_some() {
-            continue;
-        }
-        if keyboard_input.pressed(KeyCode::KeyQ) {
-            transform.rotate_z(f32::to_radians(ROTATION_SPEED * time.delta_secs()));
-        }
-
-        if keyboard_input.pressed(KeyCode::KeyE) {
-            transform.rotate_z(f32::to_radians(-(ROTATION_SPEED * time.delta_secs())));
-        }
-    }
-}
-*/

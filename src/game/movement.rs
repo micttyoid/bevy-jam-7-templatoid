@@ -12,21 +12,39 @@
 //! Note that the implementation used here is limited for demonstration
 //! purposes. If you want to move the player in a smoother way,
 //! consider using a [fixed timestep](https://github.com/bevyengine/bevy/blob/main/examples/movement/physics_in_fixed_timestep.rs).
-
-use bevy::{prelude::*, window::PrimaryWindow};
+use bevy::{input::common_conditions::input_just_pressed, prelude::*, window::PrimaryWindow};
 use avian2d::prelude::*;
 use crate::{
+    game::{
+        animation::*,
+        player::*,
+        level::{
+            projectiles::*,
+            enemies::*,
+        },
+    },
     AppSystems, PausableSystems,
 };
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         Update,
-        (apply_movement, apply_screen_wrap)
+        (
+            apply_player_movement, apply_screen_wrap,
+            apply_player_throw.run_if(input_just_pressed(KeyCode::Space)),
+        )
             .chain()
             .in_set(AppSystems::Update)
             .in_set(PausableSystems),
     );
+    app.add_systems(
+        Update,
+        (
+            on_collision,
+        )
+            .in_set(PausableSystems),
+    );    
+                 
 }
 
 /// These are the movement parameters for our character controller.
@@ -52,25 +70,74 @@ impl Default for MovementController {
     }
 }
 
-/*
-fn apply_movement(
-    time: Res<Time>,
-    mut movement_query: Query<(&MovementController, &mut Transform)>,
+
+fn on_collision(
+    mut collision_reader: MessageReader<CollisionStart>,
+    mut enemy_query: Query<(Entity, &mut Enemy)>,
+    mut player: Single<(Entity, &mut Player)>,
+    mut projectile_query: Query<(Entity, &Projectile)>,
 ) {
-    for (controller, mut transform) in &mut movement_query {
-        let velocity = controller.max_speed * controller.intent;
-        transform.translation += velocity.extend(0.0) * time.delta_secs();
+    for msg in collision_reader.read() {
+        let proj_entity = msg.collider1;
+        let c2 = msg.collider2;
+        if let Ok((proj_entity, projectile)) = projectile_query.get_mut(proj_entity) {
+            if let Ok((enemy_entity, mut enemy)) = enemy_query.get_mut(c2) {
+                // Enemy got hit!
+                enemy.life -= (enemy.life - 1).max(0);
+            } else {
+                let (player_entity, player) = &mut* player;
+                // Player got hit!
+                player.life -= (player.life - 1).max(0);
+            }
+        }
     }
 }
-*/
 
-fn apply_movement(
+fn apply_player_movement(
     mut movement_query: Query<(&MovementController, &mut LinearVelocity,)>,
 ) {
     for (controller, mut rb_vel) in movement_query.iter_mut() {
         rb_vel.0 = controller.max_speed * controller.intent; // normal
     }
 }
+
+fn apply_player_throw(
+    mut commands: Commands,
+    anim_assets: Res<AnimationAssets>,
+    player: Single<(Entity, &Transform), With<Player>>,
+    global_transform: Query<&GlobalTransform>,    
+) {
+    let (player_entity, player_transform) = *player;
+    if let Ok(player_global_transform) = global_transform.get(player_entity) {
+        let ((x,y,_)) = player_transform.translation.into();
+        let xy = Vec2::new(x,y);
+
+        let dir_not_norm = player_transform.local_x().xy(); 
+        let direction = Dir2::new(dir_not_norm.normalize()).expect("It is not normalized");
+
+        commands.spawn(
+            basic_projectile(xy, direction, &anim_assets),
+        );        
+    }
+
+}
+
+/// This should be where the optimization takes place if the frame dropss
+fn apply_projectile_movement(
+    mut movement_query: Query<(&Projectile, &mut LinearVelocity,)>,
+    mut commands: Commands,
+    player: Single<(Entity, &Transform), With<Player>>,    
+) {
+    let (player_entity, player_transform) = *player;
+
+    let forward_direction = (*player_transform).forward();
+    /*
+    commands.entity(player_entity).add_child((
+        Projectile,
+    ));
+    */
+}
+
 
 #[derive(Component, Reflect)]
 #[reflect(Component)]

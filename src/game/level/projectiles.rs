@@ -1,9 +1,20 @@
 use bevy::prelude::*;
-//use avian2d::prelude::*;
+use avian2d::prelude::*;
+
 use crate::{
+    game::{
+        movement::*,
+        animation::*,
+        player::*,
+        level::{
+            enemies::{basic_enemy, basic_boss,},
+        },
+    },    
     screens::gameplay::GameplayLifetime,
     AppSystems, PausableSystems,
 };
+
+pub const PROJECTILE_Z_TRANSLATION: f32 = PLAYER_Z_TRANSLATION;
 
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
@@ -34,8 +45,18 @@ fn update_projectiles() {}
 /// [`Player`] can throw. [`Mob`] can throw. or throw [`Source`] instead
 /// Game should run smoothly roughly 1000 projectiles: https://youtu.be/AY7QEEnSGVU
 #[derive(Component)]
-#[require(GameplayLifetime)]
-pub struct Projectile;
+#[require(GameplayLifetime, Collider, CollisionEventsEnabled)]
+pub struct Projectile {
+    pub direction: Dir2,
+}
+
+impl Default for Projectile {
+    fn default () -> Self {
+        Self {
+            direction: Dir2::NEG_Y,
+        }
+    }
+}
 
 /// The source where the projectiles spread out from
 /// This is to make projectile pattern that's spread out from a source like 
@@ -44,3 +65,26 @@ pub struct Projectile;
 #[derive(Component)]
 #[require(GameplayLifetime)]
 pub struct Source;
+
+// TODO: anim
+pub fn basic_projectile(xy: Vec2, direction: Dir2, anim_assets: &AnimationAssets) -> impl Bundle {
+    let basic_projectile_collision_radius: f32 = 2.;
+    let speed: f32 = 500.0;
+    //    pr ----- | ---------- P
+    //    ^ spawned with room
+    let new_xy = (basic_projectile_collision_radius + PLAYER_COLLIDER_RADIUS + 1.0e-5) * direction + xy;
+    (                
+        Name::new("Basic Projectile"),
+        Projectile { direction },
+        LinearVelocity(speed * direction.as_vec2()), 
+        LinearDamping(0.0),
+        //Sprite::default(),
+        ScreenWrap,
+        LockedAxes::new().lock_rotation(), // To be resolved with later kinematic solution
+        //Transform::from_xyz(xy.x, xy.y, PROJECTILE_Z_TRANSLATION),
+        Transform::from_xyz(new_xy.x, new_xy.y, PROJECTILE_Z_TRANSLATION),
+        RigidBody::Dynamic,
+        GravityScale(0.0),
+        Collider::circle(basic_projectile_collision_radius),
+    )
+}

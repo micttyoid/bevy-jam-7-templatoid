@@ -29,9 +29,10 @@ pub(super) fn plugin(app: &mut App) {
 }
 
 #[derive(Component, Debug, Clone, Copy, PartialEq, Eq, Reflect)]
+#[require(Collider)]
 #[reflect(Component)]
 pub struct Player {
-    life: usize,
+    pub life: usize,
 }
 
 impl Default for Player {
@@ -41,7 +42,6 @@ impl Default for Player {
         }
     }
 }
-
 
 /// The player character.
 pub fn player(max_speed: f32, anim_assets: &AnimationAssets) -> impl Bundle {

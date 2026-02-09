@@ -5,7 +5,16 @@ use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 use bevy_aseprite_ultra::prelude::{AseAnimation, ManualTick};
 
 use crate::{
-    Pause, game::level::spawn_level, menus::Menu, screens::Screen, utils::tiled::spawn_tiled_map,
+    Pause,
+    game::{
+        player::*,
+        level::{
+            Level,
+            enemies::{Boss, Enemy},
+            spawn_level,
+        },
+    },
+    menus::Menu, screens::Screen, utils::tiled::spawn_tiled_map,
 };
 
 
@@ -16,13 +25,21 @@ pub struct GameplayLifetime;
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         OnEnter(Screen::Gameplay),
-        (spawn_tiled_map::<1>, spawn_level).chain(),
+        (
+            spawn_tiled_map,
+            spawn_level,
+        ).chain(),
     );
-
-    // Toggle pause on key press.
+    
     app.add_systems(
         Update,
         (
+            // Top-level game loop
+            (check_boss_and_player).run_if(
+                in_state(Screen::Gameplay)
+                .and(not(in_state(Menu::None)))
+            ),
+            // Toggle pause on key press.
             (pause, spawn_pause_overlay, open_pause_menu).run_if(
                 in_state(Screen::Gameplay)
                     .and(in_state(Menu::None))
@@ -40,6 +57,40 @@ pub(super) fn plugin(app: &mut App) {
         OnEnter(Menu::None),
         unpause.run_if(in_state(Screen::Gameplay)),
     );
+}
+
+/// Top game loop. If boss is low on life, the level is set to the
+/// next until the last level.
+/// "1 boss per level, if boss gets life zero, auto move on?" "yes"
+fn check_boss_and_player(
+    mut next_level: ResMut<NextState<Level>>,
+    mut next_menu: ResMut<NextState<Menu>>,
+    mut time: ResMut<Time<Physics>>,
+    current_level: Res<State<Level>>,
+    query: Query<(Entity, &Enemy), With<Boss>>,
+    player: Single<&Player>,
+) {
+    match query.single() {
+        Ok((_, enemy)) => {
+            if enemy.life == 0 {
+                time.pause();
+                let lev = current_level.get();
+                if lev.is_last() {
+                    // End game
+                    next_menu.set(Menu::Credits);
+                } else {
+                    next_level.set(lev.next());
+                }
+            }
+            if (*player).life == 0 {
+                // TODO: lost
+                next_menu.set(Menu::Credits);
+            }
+        },
+        Err(_) => {
+            panic!("No boss found at the current level");
+        },
+    }
 }
 
 fn unpause(
