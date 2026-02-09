@@ -1,3 +1,8 @@
+# Note on branch
+
+The template branch is not set as Default branch for our current team.
+The template branch is [here](https://github.com/micttyoid/bevy-jam-7-templatoid/tree/templatoid)
+
 # Bevy Jam 7 Templatoid
 
 Forked from [Bevy_new_2d](https://github.com/TheBevyFlock/bevy_new_2d)
