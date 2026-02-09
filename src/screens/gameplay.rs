@@ -1,14 +1,17 @@
 //! The screen state for the main gameplay.
 
+use avian2d::prelude::{Physics, PhysicsTime};
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 
 use crate::{
-    Pause, game::level::spawn_level, menus::Menu, screens::Screen,
-    utils::tiled::spawn_tiled_map,
+    Pause, game::level::spawn_level, menus::Menu, screens::Screen, utils::tiled::spawn_tiled_map,
 };
 
 pub(super) fn plugin(app: &mut App) {
-    app.add_systems(OnEnter(Screen::Gameplay), (spawn_tiled_map::<2>, spawn_level).chain());
+    app.add_systems(
+        OnEnter(Screen::Gameplay),
+        (spawn_tiled_map::<2>, spawn_level).chain(),
+    );
 
     // Toggle pause on key press.
     app.add_systems(
@@ -33,12 +36,14 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-fn unpause(mut next_pause: ResMut<NextState<Pause>>) {
+fn unpause(mut next_pause: ResMut<NextState<Pause>>, mut time: ResMut<Time<Physics>>) {
     next_pause.set(Pause(false));
+    time.unpause();
 }
 
-fn pause(mut next_pause: ResMut<NextState<Pause>>) {
+fn pause(mut next_pause: ResMut<NextState<Pause>>, mut time: ResMut<Time<Physics>>) {
     next_pause.set(Pause(true));
+    time.pause(); // pausing physics
 }
 
 fn spawn_pause_overlay(mut commands: Commands) {

@@ -7,12 +7,12 @@
 use bevy::prelude::*;
 use bevy_aseprite_ultra::{
     AsepriteUltraPlugin,
-    prelude::{AnimationEvents, AseAnimation},
+    prelude::{AnimationEvents, AseAnimation, ManualTick},
 };
 use rand::seq::IndexedRandom;
 
 use crate::{
-    AppSystems, PausableSystems,
+    AppSystems, PausableSystems, Pause,
     audio::sound_effect,
     game::player::{Player, PlayerAssets},
 };
@@ -27,6 +27,8 @@ pub(super) fn plugin(app: &mut App) {
             .in_set(AppSystems::Update)
             .in_set(PausableSystems),
     );
+    app.add_systems(OnEnter(Pause(true)), pause_animations)
+        .add_systems(OnExit(Pause(true)), resume_animations);
 }
 
 /// Update the sprite direction and animation state (idling/walking).
@@ -98,4 +100,17 @@ pub enum PlayerDirection {
     Down,
     Left,
     Right,
+}
+
+/// Add ManualTick to all animations when pausing (stops Aseprite animations)
+fn pause_animations(mut commands: Commands, query: Query<Entity, With<AseAnimation>>) {
+    for entity in &query {
+        commands.entity(entity).insert(ManualTick);
+    }
+}
+/// Remove ManualTick to let the library take over again
+fn resume_animations(mut commands: Commands, query: Query<Entity, With<AseAnimation>>) {
+    for entity in &query {
+        commands.entity(entity).remove::<ManualTick>();
+    }
 }
