@@ -9,16 +9,17 @@ use bevy_aseprite_ultra::prelude::{AseAnimation, ManualTick};
 use crate::{
     Pause,
     game::{
-        player::*,
         level::{
             Level,
             enemies::{Boss, Enemy},
             spawn_level,
         },
+        player::*,
     },
-    menus::Menu, screens::Screen, utils::tiled::spawn_tiled_map,
+    menus::Menu,
+    screens::Screen,
+    utils::tiled::spawn_tiled_map,
 };
-
 
 /// The entity lives throug [`Screen::Gameplay`]
 #[derive(Component, Default)]
@@ -27,19 +28,14 @@ pub struct GameplayLifetime;
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         OnEnter(Screen::Gameplay),
-        (
-            spawn_tiled_map,
-            spawn_level,
-        ).chain(),
+        (spawn_tiled_map, spawn_level).chain(),
     );
-    
+
     app.add_systems(
         Update,
         (
             // Top-level game loop
-            (check_boss_and_player).run_if(
-                in_state(Screen::Gameplay).and(in_state(Menu::None))
-            ),
+            (check_boss_and_player).run_if(in_state(Screen::Gameplay).and(in_state(Menu::None))),
             // Toggle pause on key press.
             (pause, spawn_pause_overlay, open_pause_menu).run_if(
                 in_state(Screen::Gameplay)
@@ -62,7 +58,8 @@ pub(super) fn plugin(app: &mut App) {
 
 /// Top game loop. If boss is low on life, the level is set to the
 /// next until the last level.
-/// "1 boss per level, if boss gets life zero, auto move on?" "yes"
+/// "1 boss per level, if boss gets despawned, auto move on?" "yes"
+/// Also reset the level when we finish last - or player dies
 fn check_boss_and_player(
     mut next_screen: ResMut<NextState<Screen>>,
     mut next_level: ResMut<NextState<Level>>,
@@ -70,30 +67,27 @@ fn check_boss_and_player(
     mut next_pause: ResMut<NextState<Pause>>,
     mut time: ResMut<Time<Physics>>,
     current_level: Res<State<Level>>,
-    query: Query<(Entity, &Enemy), With<Boss>>,
+    boss_q: Query<Entity, With<Boss>>,
     player: Single<&Player>,
 ) {
-    match query.single() {
-        Ok((_, boss_enemy)) => {
-            if boss_enemy.life == 0 {
-                time.pause();
-                next_pause.set(Pause(true));
-                let lev = current_level.get();
-                if lev.is_last() {
-                    next_menu.set(Menu::Credits);
-                } else {
-                    next_level.set(lev.next());
-                    next_screen.set(Screen::Loading);
-                }
-            }
-            if (*player).life == 0 {
-                // TODO: lost
-                next_menu.set(Menu::Credits);
-            }
-        },
-        Err(_) => {
-            panic!("No boss found at the current level");
-        },
+    if boss_q.is_empty() {
+        time.pause();
+        next_pause.set(Pause(true));
+        let lev = current_level.get();
+        if lev.is_last() {
+            next_menu.set(Menu::Credits);
+            next_screen.set(Screen::Title);
+            next_level.set(Level::default());
+        } else {
+            next_level.set(lev.next());
+            next_screen.set(Screen::Loading);
+        }
+        if (*player).life == 0 {
+            // TODO: lost
+            next_menu.set(Menu::Credits);
+            next_screen.set(Screen::Title);
+            next_level.set(Level::default());
+        }
     }
 }
 
@@ -142,7 +136,9 @@ fn spawn_pause_overlay(mut commands: Commands) {
 }
 
 fn cleanup(mut commands: Commands, mut query: Query<Entity, With<GameplayLifetime>>) {
-    query.iter_mut().for_each(|entity| commands.entity(entity).despawn());
+    query
+        .iter_mut()
+        .for_each(|entity| commands.entity(entity).despawn());
 }
 
 fn open_pause_menu(mut next_menu: ResMut<NextState<Menu>>) {

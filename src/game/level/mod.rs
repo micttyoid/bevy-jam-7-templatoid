@@ -8,12 +8,12 @@ use bevy::{prelude::*, state::state::FreelyMutableState};
 use crate::{
     asset_tracking::LoadResource,
     audio::music,
-    menus::Menu,
     game::{
         animation::AnimationAssets,
         level::enemies::{basic_boss, basic_enemy},
         player::player,
     },
+    menus::Menu,
     screens::Screen,
 };
 
@@ -103,89 +103,81 @@ pub fn spawn_level(
     anim_assets: Res<AnimationAssets>,
     mut time: ResMut<Time<Physics>>,
 ) {
-    let lev_entity = commands.spawn((
-        Name::new("Level"),
-        Transform::default(),
-        Visibility::default(),
-        DespawnOnExit(Screen::Gameplay),
-    )).id();
+    let lev_entity = commands
+        .spawn((
+            Name::new("Level"),
+            Transform::default(),
+            Visibility::default(),
+            DespawnOnExit(Screen::Gameplay),
+        ))
+        .id();
     use Level::*;
     match current_level.get() {
         Foo => {
-            commands.entity(lev_entity).insert((
-                children![
-                    player(100.0, &anim_assets),
-                    basic_enemy((-70., 20.).into(), &anim_assets),
-                    basic_enemy((-60., 0.).into(), &anim_assets),
-                    basic_boss((140., 40.).into(), &anim_assets),
-                    (
-                        Name::new("Gameplay Music"),
-                        DespawnOnExit(Menu::None), // To remove at ending such as to [`Menu::Credit`]
-                        music(level_assets.music.clone()),
-                    ),
-                ],
-            ));
-        },
+            commands.entity(lev_entity).insert((children![
+                player(100.0, &anim_assets),
+                basic_enemy((-70., 20.).into(), &anim_assets),
+                basic_enemy((-60., 0.).into(), &anim_assets),
+                basic_boss((140., 40.).into(), &anim_assets),
+                (
+                    Name::new("Gameplay Music"),
+                    DespawnOnExit(Menu::None), // To remove at ending such as to [`Menu::Credit`]
+                    music(level_assets.music.clone()),
+                ),
+            ],));
+        }
         Bar => {
-            commands.entity(lev_entity).insert((
-                children![
-                    player(100.0, &anim_assets),
-                    basic_enemy((-70., 20.).into(), &anim_assets),
-                    basic_enemy((-60., 0.).into(), &anim_assets),
-                    basic_boss((140., 40.).into(), &anim_assets),
-                    (
-                        Name::new("Gameplay Music"),
-                        DespawnOnExit(Menu::None),
-                        music(level_assets.music.clone()),
-                    ),
-                ],
-            ));
-        },
+            commands.entity(lev_entity).insert((children![
+                player(100.0, &anim_assets),
+                basic_enemy((-70., 20.).into(), &anim_assets),
+                basic_enemy((-60., 0.).into(), &anim_assets),
+                basic_boss((140., 40.).into(), &anim_assets),
+                (
+                    Name::new("Gameplay Music"),
+                    DespawnOnExit(Menu::None),
+                    music(level_assets.music.clone()),
+                ),
+            ],));
+        }
         Baz => {
-            commands.entity(lev_entity).insert((
-                children![
-                    player(100.0, &anim_assets),
-                    basic_enemy((-70., 20.).into(), &anim_assets),
-                    basic_enemy((-60., 0.).into(), &anim_assets),
-                    basic_boss((140., 40.).into(), &anim_assets),
-                    (
-                        Name::new("Gameplay Music"),
-                        DespawnOnExit(Menu::None),
-                        music(level_assets.music.clone()),
-                    ),
-                ],
-            ));
-        },
+            commands.entity(lev_entity).insert((children![
+                player(100.0, &anim_assets),
+                basic_enemy((-70., 20.).into(), &anim_assets),
+                basic_enemy((-60., 0.).into(), &anim_assets),
+                basic_boss((140., 40.).into(), &anim_assets),
+                (
+                    Name::new("Gameplay Music"),
+                    DespawnOnExit(Menu::None),
+                    music(level_assets.music.clone()),
+                ),
+            ],));
+        }
         Qux => {
-            commands.entity(lev_entity).insert((
-                children![
-                    player(100.0, &anim_assets),
-                    basic_enemy((-70., 20.).into(), &anim_assets),
-                    basic_enemy((-60., 0.).into(), &anim_assets),
-                    basic_boss((140., 40.).into(), &anim_assets),
-                    (
-                        Name::new("Gameplay Music"),
-                        DespawnOnExit(Menu::None),
-                        music(level_assets.music.clone()),
-                    ),
-                ],
-            ));
-        },
+            commands.entity(lev_entity).insert((children![
+                player(100.0, &anim_assets),
+                basic_enemy((-70., 20.).into(), &anim_assets),
+                basic_enemy((-60., 0.).into(), &anim_assets),
+                basic_boss((140., 40.).into(), &anim_assets),
+                (
+                    Name::new("Gameplay Music"),
+                    DespawnOnExit(Menu::None),
+                    music(level_assets.music.clone()),
+                ),
+            ],));
+        }
         Quux => {
-            commands.entity(lev_entity).insert((
-                children![
-                    player(100.0, &anim_assets),
-                    basic_enemy((-70., 20.).into(), &anim_assets),
-                    basic_enemy((-60., 0.).into(), &anim_assets),
-                    basic_boss((140., 40.).into(), &anim_assets),
-                    (
-                        Name::new("Gameplay Music"),
-                        DespawnOnExit(Menu::None),
-                        music(level_assets.music.clone()),
-                    ),
-                ],
-            ));
-        },
+            commands.entity(lev_entity).insert((children![
+                player(100.0, &anim_assets),
+                basic_enemy((-70., 20.).into(), &anim_assets),
+                basic_enemy((-60., 0.).into(), &anim_assets),
+                basic_boss((140., 40.).into(), &anim_assets),
+                (
+                    Name::new("Gameplay Music"),
+                    DespawnOnExit(Menu::None),
+                    music(level_assets.music.clone()),
+                ),
+            ],));
+        }
     }
     time.unpause();
 }

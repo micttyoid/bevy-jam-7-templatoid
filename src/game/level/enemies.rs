@@ -81,6 +81,7 @@ pub fn basic_boss(xy: Vec2, anim_assets: &AnimationAssets) -> impl Bundle {
         Transform::from_xyz(xy.x, xy.y, ENEMY_Z_TRANSLATION),
         RigidBody::Dynamic,
         GravityScale(0.0),
+        Dominance(5), // dominates all dynamic bodies with a dominance lower than `5`.
         Collider::circle(basic_enemy_collision_radius),
     )
 }
