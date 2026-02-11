@@ -66,13 +66,15 @@ fn on_collision(
     mut collision_reader: MessageReader<CollisionStart>,
     mut enemy_query: Query<(Entity, &mut Enemy)>,
     mut player_query: Query<&mut Player>,
-    mut projectile_query: Query<(Entity, &mut Projectile)>,
+    mut projectile_query: Query<(Entity, &mut Projectile, Has<Friendly>, Has<Hostile>)>,
 ) {
     for msg in collision_reader.read() {
         let c1 = msg.collider1;
         let c2 = msg.collider2;
-        if let Ok((proj_entity, mut projectile)) = projectile_query.get_mut(c1) {
-            if let Ok((_enemy_entity, mut enemy)) = enemy_query.get_mut(c2) {
+        if let Ok((proj_entity, mut projectile, has_friendly, _)) = projectile_query.get_mut(c1) {
+            if let Ok((_enemy_entity, mut enemy)) = enemy_query.get_mut(c2)
+                && has_friendly
+            {
                 // Enemy got hit!
                 enemy.life = enemy.life.saturating_sub(1);
                 commands.entity(proj_entity).despawn();
@@ -80,7 +82,10 @@ fn on_collision(
                 // This part getting smelly
                 due_process(&mut commands, &proj_entity, &mut projectile);
             }
-        } else if player_query.contains(c1) {
+        } else if player_query.contains(c1)
+            && let Ok((_, _, _, has_hostile)) = projectile_query.get(c2)
+            && has_hostile
+        {
             // Player got hit!
             let mut player = player_query
                 .single_mut()
@@ -132,22 +137,20 @@ fn apply_player_throw(
 
         let dir_not_norm = player_transform.local_x().xy();
         let direction = Dir2::new(dir_not_norm.normalize()).expect("It is not normalized");
-        /*
-        commands.spawn(basic_projectile(
-            xy,
-            direction,
-            PLAYER_COLLIDER_RADIUS,
-            &anim_assets,
-        ));
-        */
-        commands.spawn(bounce_down_projectile(
+        commands.spawn(basic_projectile::<Friendly>(
             xy,
             direction,
             PLAYER_COLLIDER_RADIUS,
             &anim_assets,
         ));
         /*
-        commands.spawn(lifespan_projectile(
+        commands.spawn(bounce_down_projectile::<Friendly>(
+            xy,
+            direction,
+            PLAYER_COLLIDER_RADIUS,
+            &anim_assets,
+        ));
+        commands.spawn(lifespan_projectile::<Friendly>(
             xy,
             direction,
             PLAYER_COLLIDER_RADIUS,

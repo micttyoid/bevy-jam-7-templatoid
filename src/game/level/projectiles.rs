@@ -49,6 +49,14 @@ impl Default for Projectile {
     }
 }
 
+/// Something like the `collision_layers` but ECS
+#[derive(Component, Default, Debug)]
+pub struct Friendly;
+
+/// Something like the `collision_layers` but ECS
+#[derive(Component, Default, Debug)]
+pub struct Hostile;
+
 /// Define how projectile is resolved beside hit
 /// Not gonna use enumset
 #[derive(Debug, PartialEq, Eq)]
@@ -59,7 +67,27 @@ pub enum Due {
 
 /// thrower radius: radius of the thrower
 /// TODO: visual using AnimationAssets
-pub fn basic_projectile(
+///
+/// **Example: player**
+/// ```ignore
+/// commands.spawn(basic_projectile::<Friendly>(
+///     xy,
+///     direction,
+///     PLAYER_COLLIDER_RADIUS,
+///     &anim_assets,
+/// ));
+/// ```
+///
+/// **Example: enemy**
+/// ```ignore
+/// commands.spawn(basic_projectile::<Hostile>(
+///     xy,
+///     direction,
+///     PLAYER_COLLIDER_RADIUS,
+///     &anim_assets,
+/// ));
+/// ```s
+pub fn basic_projectile<HostilityComponent: Component + Default>(
     xy: Vec2,
     direction: Dir2,
     thrower_radius: f32,
@@ -78,6 +106,7 @@ pub fn basic_projectile(
             direction,
             dues: vec![],
         },
+        HostilityComponent::default(),
         LinearVelocity(speed * direction.as_vec2()),
         LinearDamping(0.0),
         //Sprite::default(),
