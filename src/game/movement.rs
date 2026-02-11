@@ -129,13 +129,24 @@ fn apply_player_throw(
     anim_assets: Res<AnimationAssets>,
     player: Single<(Entity, &Transform, &Player), With<Cool>>,
     global_transform: Query<&GlobalTransform>,
+    camera_query: Single<(&Camera, &GlobalTransform)>,
+    window: Single<&Window>,
 ) {
     let (player_entity, player_transform, player) = *player;
     if let Ok(player_global_transform) = global_transform.get(player_entity) {
         let (x, y, _) = player_global_transform.translation().into(); // This may differ by the worldwrap
         let xy = Vec2::new(x, y);
 
-        let dir_not_norm = player_transform.local_x().xy();
+        let (camera, camera_transform) = *camera_query;
+        let dir_not_norm = if let Some(cursor_position) = window.cursor_position()
+               // Calculate a world position based on the cursor's position.
+               && let Ok(cursor_world_pos) = camera.viewport_to_world_2d(camera_transform, cursor_position)
+        {
+            cursor_world_pos - xy
+        } else {
+            // Fallback
+            player_transform.local_x().xy()
+        };
         let direction = Dir2::new(dir_not_norm.normalize()).expect("It is not normalized");
         commands.spawn(basic_projectile::<Friendly>(
             xy,
