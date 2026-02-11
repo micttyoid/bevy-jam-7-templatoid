@@ -130,7 +130,7 @@ pub fn basic_projectile<HostilityComponent: Component + Default>(
 
 /// Example of projectile that's gone when it bounces more than certain time
 /// TODO: visual using AnimationAssets
-pub fn bounce_down_projectile(
+pub fn bounce_down_projectile<HostilityComponent: Component + Default>(
     xy: Vec2,
     direction: Dir2,
     thrower_radius: f32,
@@ -146,6 +146,7 @@ pub fn bounce_down_projectile(
             direction,
             dues: vec![Due::BounceDown(5)],
         },
+        HostilityComponent::default(),
         LinearVelocity(speed * direction.as_vec2()),
         LinearDamping(0.0),
         //Sprite::default(),
@@ -161,7 +162,7 @@ pub fn bounce_down_projectile(
 
 /// Example of projectile that has lifespan
 /// TODO: visual using AnimationAssets
-pub fn lifespan_projectile(
+pub fn lifespan_projectile<HostilityComponent: Component + Default>(
     xy: Vec2,
     direction: Dir2,
     thrower_radius: f32,
@@ -181,6 +182,7 @@ pub fn lifespan_projectile(
                 TimerMode::Once,
             ))],
         },
+        HostilityComponent::default(),
         LinearVelocity(speed * direction.as_vec2()),
         LinearDamping(0.0),
         //Sprite::default(),
