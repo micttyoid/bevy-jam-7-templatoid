@@ -33,9 +33,9 @@ pub(super) fn plugin(app: &mut App) {
 #[require(Collider)]
 #[reflect(Component)]
 pub struct Player {
+    pub ammo: usize,
     pub life: usize,
     pub cool: f32, // throw cool time. every [`cool`] second, the player can throw
-    pub ammo: u32,
 }
 
 impl Default for Player {
@@ -45,6 +45,17 @@ impl Default for Player {
             cool: 0.5,
             ammo: 3,
         }
+    }
+}
+
+impl Player {
+    pub fn increment_ammo(&mut self, n: usize) {
+        self.ammo += n;
+    }
+
+    pub fn decrement_ammo(&mut self, n: usize) {
+        // In case any later debug; Negative ammo should not happen
+        self.ammo = self.ammo.saturating_sub(n);
     }
 }
 
