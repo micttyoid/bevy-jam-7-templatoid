@@ -3,7 +3,11 @@ pub mod projectiles;
 
 use avian2d::prelude::{Physics, PhysicsTime};
 
-use bevy::{prelude::*, state::state::FreelyMutableState};
+use bevy::{
+    prelude::*,
+    state::state::FreelyMutableState,
+    window::{CursorIcon, CustomCursor, CustomCursorImage},
+};
 
 use crate::{
     asset_tracking::LoadResource,
@@ -84,6 +88,8 @@ impl Level {
 pub struct LevelAssets {
     #[dependency]
     music: Handle<AudioSource>,
+    #[dependency]
+    aim_cursor: Handle<Image>,
 }
 
 impl FromWorld for LevelAssets {
@@ -91,6 +97,7 @@ impl FromWorld for LevelAssets {
         let assets = world.resource::<AssetServer>();
         Self {
             music: assets.load("audio/music/Fluffing A Duck.ogg"),
+            aim_cursor: assets.load("images/cursor.png"),
         }
     }
 }
@@ -102,6 +109,7 @@ pub fn spawn_level(
     level_assets: Res<LevelAssets>,
     anim_assets: Res<AnimationAssets>,
     mut time: ResMut<Time<Physics>>,
+    window: Single<Entity, With<Window>>,
 ) {
     let lev_entity = commands
         .spawn((
@@ -179,5 +187,12 @@ pub fn spawn_level(
             ],));
         }
     }
+    commands.entity(*window).insert((
+        CursorIcon::Custom(CustomCursor::Image(CustomCursorImage {
+            handle: level_assets.aim_cursor.clone(),
+            ..default()
+        })),
+        DespawnOnExit(Menu::None),
+    ));
     time.unpause();
 }

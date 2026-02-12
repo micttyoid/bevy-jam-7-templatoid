@@ -124,7 +124,7 @@ pub fn basic_projectile<HostilityComponent: Component + Default>(
         RigidBody::Dynamic,
         GravityScale(0.0),
         Collider::circle(basic_projectile_collision_radius),
-        Restitution::new(1.0),
+        Restitution::new(1.5), // testing value
     )
 }
 

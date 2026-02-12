@@ -72,7 +72,7 @@ pub fn player(max_speed: f32, anim_assets: &AnimationAssets) -> impl Bundle {
         // TODO: possibly kinematic later that should update `movement::apply_movement` along
         RigidBody::Dynamic,
         GravityScale(0.0),
-        Collider::circle(PLAYER_COLLIDER_RADIUS),
+        Collider::capsule(4.0, 14.0),
         Cool::default(),
     )
 }
