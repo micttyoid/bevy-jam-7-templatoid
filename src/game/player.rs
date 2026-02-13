@@ -14,7 +14,7 @@ use crate::{
 };
 
 pub const PLAYER_Z_TRANSLATION: f32 = 100.;
-pub const PLAYER_COLLIDER_RADIUS: f32 = 12.;
+pub const PLAYER_COLLIDER_CAPSULE: (f32, f32) = (4., 14.);
 
 pub(super) fn plugin(app: &mut App) {
     app.load_resource::<AnimationAssets>();
@@ -89,7 +89,7 @@ pub fn player(max_speed: f32, anim_assets: &AnimationAssets) -> impl Bundle {
         // TODO: possibly kinematic later that should update `movement::apply_movement` along
         RigidBody::Dynamic,
         GravityScale(0.0),
-        Collider::circle(PLAYER_COLLIDER_RADIUS),
+        Collider::capsule(PLAYER_COLLIDER_CAPSULE.0, PLAYER_COLLIDER_CAPSULE.1),
         Cool::default(),
     )
 }

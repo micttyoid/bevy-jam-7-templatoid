@@ -92,16 +92,21 @@ pub fn player_chakra<HostilityComponent: Component + Default>(
     xy: Vec2,
     direction: Dir2,
     thrower_radius: f32,
+    thrower_height: f32,
     anim_assets: &AnimationAssets,
 ) -> impl Bundle {
     let player_projectile_collider_radius: f32 = 2.;
     let speed: f32 = 300.0;
     // If the collider is not alway centered with respect to the entity this could be this or vice versa(diameter of thrower):
-    //             diameter of projectile               radius of Thrower
+    //             diameter of projectile        extent_in_direction of Thrower
     // (1.0e-3) -------------------------------|---------------------------------- Thrower
     //    ^ tolerance
+    // Calculate how far the capsule extends in the firing direction
+    let dir_vec = direction.as_vec2();
+    let extent_in_direction = (thrower_height * dir_vec.y.abs()) + thrower_radius;
+
     let new_xy =
-        (player_projectile_collider_radius + (2.0 * thrower_radius) + 1.0e-3) * direction + xy;
+        (player_projectile_collider_radius + (extent_in_direction) + 1.0e-3) * direction + xy;
     let chakram_projectile_life: f32 = 5.0; // seconds
     (
         Name::new("Chakra"),

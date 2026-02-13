@@ -188,9 +188,10 @@ pub fn eye_enemy(xy: Vec2, anim_assets: &AnimationAssets) -> impl Bundle {
     )
 }
 
+// boss 1
 pub fn gate_boss(xy: Vec2, anim_assets: &AnimationAssets) -> impl Bundle {
     (
-        Name::new("Basic Boss"),
+        Name::new("Gate Boss"),
         Boss,
         Enemy::new_random(1),
         AseAnimation {
@@ -203,11 +204,36 @@ pub fn gate_boss(xy: Vec2, anim_assets: &AnimationAssets) -> impl Bundle {
         Sprite::default(),
         ScreenWrap,
         LockedAxes::new().lock_rotation(), // To be resolved with later kinematic solution
-        Transform::from_xyz(xy.x, xy.y, ENEMY_Z_TRANSLATION).with_scale(Vec3::splat(4.0)),
+        Transform::from_xyz(xy.x, xy.y, ENEMY_Z_TRANSLATION),
         RigidBody::Dynamic,
         GravityScale(0.0),
         Dominance(5), // dominates all dynamic bodies with a dominance lower than `5`.
         Collider::rectangle(50., 50.),
+    )
+}
+
+// boss 2
+pub fn eye_boss(xy: Vec2, anim_assets: &AnimationAssets) -> impl Bundle {
+    let basic_enemy_collision_radius: f32 = 12.;
+    (
+        Name::new("Eye Boss"),
+        Boss,
+        Enemy::new_random(1),
+        AseAnimation {
+            animation: Animation::tag("idle")
+                .with_repeat(AnimationRepeat::Loop)
+                .with_direction(AnimationDirection::Forward)
+                .with_speed(1.0),
+            aseprite: anim_assets.enemies.boss2.clone(),
+        },
+        Sprite::default(),
+        ScreenWrap,
+        LockedAxes::new().lock_rotation(), // To be resolved with later kinematic solution
+        Transform::from_xyz(xy.x, xy.y, ENEMY_Z_TRANSLATION),
+        RigidBody::Dynamic,
+        GravityScale(0.0),
+        Dominance(5), // dominates all dynamic bodies with a dominance lower than `5`.
+        Collider::circle(basic_enemy_collision_radius),
     )
 }
 

@@ -11,7 +11,7 @@ use crate::{
     audio::music,
     game::{
         animation::AnimationAssets,
-        level::enemies::{basic_boss, basic_enemy, eye_enemy, gate_boss},
+        level::enemies::{basic_boss, basic_enemy, eye_boss, eye_enemy, gate_boss},
         player::player,
     },
     menus::Menu,
@@ -136,9 +136,9 @@ pub fn spawn_level(
         Bar => {
             commands.entity(lev_entity).insert((children![
                 player(100.0, &anim_assets),
-                basic_enemy((-70., 20.).into(), &anim_assets),
-                basic_enemy((-60., 0.).into(), &anim_assets),
-                basic_boss((140., 40.).into(), &anim_assets),
+                eye_enemy((-70., 20.).into(), &anim_assets),
+                eye_enemy((-60., 0.).into(), &anim_assets),
+                eye_boss((140., 40.).into(), &anim_assets),
                 (
                     Name::new("Gameplay Music"),
                     DespawnOnExit(Menu::None),
