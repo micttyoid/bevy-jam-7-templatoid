@@ -7,7 +7,7 @@ use crate::{
     AppSystems, PausableSystems,
     game::{
         animation::*,
-        level::enemies::{basic_boss, basic_enemy},
+        level::enemies::{Enemy, basic_boss, basic_enemy},
         movement::*,
         player::*,
     },
@@ -296,6 +296,7 @@ impl Cool {
 }
 
 /// NOTE: For more control, use virtual time
+/// Maybe to handle it better storing Parent Entity in Cooldown be better
 fn update_cools(
     mut commands: Commands,
     time: Res<Time>,

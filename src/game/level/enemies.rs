@@ -6,7 +6,7 @@ use crate::{
     PausableSystems,
     game::{
         animation::*,
-        level::projectiles::{Hostile, lifespan_projectile},
+        level::projectiles::{Cool, Hostile, lifespan_projectile},
         movement::*,
         player::{PLAYER_Z_TRANSLATION, Player},
     },
@@ -76,7 +76,7 @@ fn check_enemy_death(
 
 #[derive(Component, Debug)]
 pub struct ShootingEnemy {
-    pub cooldown_timer: Timer,
+    pub cooldown_duration: f32,
     pub shooting_pattern: ShootingPattern,
 }
 
@@ -87,35 +87,33 @@ pub enum ShootingPattern {
 
 fn enemy_shooting_system(
     mut cmd: Commands,
-    time: Res<Time>,
     player_query: Query<&Transform, With<Player>>,
-    mut enemy_query: Query<(&Transform, &mut ShootingEnemy), Without<Player>>,
+    enemy_query: Query<(Entity, &Transform, &ShootingEnemy), (With<Cool>, Without<Player>)>,
     anim_assets: Res<AnimationAssets>,
 ) {
     let Ok(player_transform) = player_query.single() else {
         return; // No player, don't shoot
     };
     let player_pos = player_transform.translation.xy();
-    for (enemy_transform, mut shooter) in enemy_query.iter_mut() {
-        shooter.cooldown_timer.tick(time.delta());
-        if shooter.cooldown_timer.just_finished() {
-            let enemy_pos = enemy_transform.translation.xy();
-            let enemy_radius = 12.0; // Should match enemy collider radius
-            let directions = match &shooter.shooting_pattern {
-                ShootingPattern::AtPlayer => {
-                    let dir = (player_pos - enemy_pos).normalize();
-                    vec![Dir2::new(dir).unwrap_or(Dir2::NEG_Y)]
-                }
-            };
-            for direction in directions {
-                cmd.spawn(lifespan_projectile::<Hostile>(
-                    enemy_pos,
-                    direction,
-                    enemy_radius,
-                    &anim_assets,
-                ));
+    for (enemy_entity, enemy_transform, shooter) in enemy_query.iter() {
+        let enemy_pos = enemy_transform.translation.xy();
+        let enemy_radius = 12.0; // Should match enemy collider radius
+        let directions = match &shooter.shooting_pattern {
+            ShootingPattern::AtPlayer => {
+                let dir = (player_pos - enemy_pos).normalize();
+                vec![Dir2::new(dir).unwrap_or(Dir2::NEG_Y)]
             }
+        };
+        for direction in directions {
+            cmd.spawn(lifespan_projectile::<Hostile>(
+                enemy_pos,
+                direction,
+                enemy_radius,
+                &anim_assets,
+            ));
         }
+        cmd.entity(enemy_entity).remove::<Cool>();
+        cmd.spawn(Cool::new(shooter.cooldown_duration));
     }
 }
 
@@ -144,6 +142,7 @@ pub fn basic_enemy(xy: Vec2, anim_assets: &AnimationAssets) -> impl Bundle {
 
 pub fn eye_enemy(xy: Vec2, anim_assets: &AnimationAssets) -> impl Bundle {
     let basic_enemy_collision_radius: f32 = 12.;
+    let cooldown = 2.0;
     (
         Name::new("Basic Enemy"),
         Enemy { life: 5 }, // GDD "Enemies to have 1-5 lives then maybe?"
@@ -162,9 +161,10 @@ pub fn eye_enemy(xy: Vec2, anim_assets: &AnimationAssets) -> impl Bundle {
         GravityScale(0.0),
         Collider::circle(basic_enemy_collision_radius),
         ShootingEnemy {
-            cooldown_timer: Timer::from_seconds(2.0, TimerMode::Repeating),
+            cooldown_duration: cooldown,
             shooting_pattern: ShootingPattern::AtPlayer,
         },
+        Cool::new(cooldown),
     )
 }
 
