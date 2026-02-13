@@ -5,7 +5,12 @@ use rand::Rng;
 
 use crate::{
     PausableSystems,
-    game::{animation::*, movement::*, player::PLAYER_Z_TRANSLATION},
+    game::{
+        animation::*,
+        level::projectiles::{Hostile, lifespan_projectile},
+        movement::*,
+        player::{PLAYER_Z_TRANSLATION, Player},
+    },
     screens::gameplay::GameplayLifetime,
 };
 
@@ -14,7 +19,7 @@ pub const ENEMY_Z_TRANSLATION: f32 = PLAYER_Z_TRANSLATION;
 pub(super) fn plugin(app: &mut App) {
     app.add_systems(
         Update,
-        (check_enemy_death, update_moves).in_set(PausableSystems),
+        (check_enemy_death, update_moves, enemy_shooting_system).in_set(PausableSystems),
     );
 }
 
@@ -143,6 +148,56 @@ fn check_enemy_death(
     }
 }
 
+#[derive(Component, Debug)]
+pub struct ShootingEnemy {
+    pub cooldown_timer: Timer,
+    pub shooting_pattern: ShootingPattern,
+    pub shooting_range: f32,
+}
+
+#[derive(Debug, Clone)]
+pub enum ShootingPattern {
+    AtPlayer,
+}
+
+fn enemy_shooting_system(
+    mut cmd: Commands,
+    time: Res<Time>,
+    player_query: Query<&Transform, With<Player>>,
+    mut enemy_query: Query<(&Transform, &mut ShootingEnemy), Without<Player>>,
+    anim_assets: Res<AnimationAssets>,
+) {
+    let Ok(player_transform) = player_query.single() else {
+        return; // No player, don't shoot
+    };
+    let player_pos = player_transform.translation.xy();
+    for (enemy_transform, mut shooter) in enemy_query.iter_mut() {
+        let enemy_pos = enemy_transform.translation.xy();
+        let distance_to_player = player_pos.distance(enemy_pos);
+        if distance_to_player <= shooter.shooting_range {
+            shooter.cooldown_timer.tick(time.delta());
+            if shooter.cooldown_timer.just_finished() {
+                let enemy_pos = enemy_transform.translation.xy();
+                let enemy_radius = 12.0; // Should match enemy collider radius
+                let directions = match &shooter.shooting_pattern {
+                    ShootingPattern::AtPlayer => {
+                        let dir = (player_pos - enemy_pos).normalize();
+                        vec![Dir2::new(dir).unwrap_or(Dir2::NEG_Y)]
+                    }
+                };
+                for direction in directions {
+                    cmd.spawn(lifespan_projectile::<Hostile>(
+                        enemy_pos,
+                        direction,
+                        enemy_radius,
+                        &anim_assets,
+                    ));
+                }
+            }
+        }
+    }
+}
+
 /// An example of an enemy
 pub fn basic_enemy(xy: Vec2, anim_assets: &AnimationAssets) -> impl Bundle {
     let basic_enemy_collision_radius: f32 = 12.;
@@ -158,11 +213,16 @@ pub fn basic_enemy(xy: Vec2, anim_assets: &AnimationAssets) -> impl Bundle {
         },
         Sprite::default(),
         ScreenWrap,
-        LockedAxes::new().lock_rotation(), // To be resolved with later kinematic solution
+        LockedAxes::new().lock_rotation(),
         Transform::from_xyz(xy.x, xy.y, ENEMY_Z_TRANSLATION),
         RigidBody::Dynamic,
         GravityScale(0.0),
         Collider::circle(basic_enemy_collision_radius),
+        ShootingEnemy {
+            cooldown_timer: Timer::from_seconds(2.0, TimerMode::Repeating),
+            shooting_pattern: ShootingPattern::AtPlayer,
+            shooting_range: 100.0,
+        },
     )
 }
 
@@ -185,6 +245,11 @@ pub fn eye_enemy(xy: Vec2, anim_assets: &AnimationAssets) -> impl Bundle {
         RigidBody::Dynamic,
         GravityScale(0.0),
         Collider::circle(basic_enemy_collision_radius),
+        ShootingEnemy {
+            cooldown_timer: Timer::from_seconds(2.0, TimerMode::Repeating),
+            shooting_pattern: ShootingPattern::AtPlayer,
+            shooting_range: 100.0,
+        },
     )
 }
 
