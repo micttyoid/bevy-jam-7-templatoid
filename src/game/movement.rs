@@ -223,7 +223,8 @@ fn apply_player_throw(
         commands.spawn(player_chakra::<Friendly>(
             xy,
             direction,
-            PLAYER_COLLIDER_RADIUS,
+            PLAYER_COLLIDER_CAPSULE.0,
+            PLAYER_COLLIDER_CAPSULE.1,
             &anim_assets,
         ));
         player.decrement_ammo(1);

@@ -82,6 +82,7 @@ pub fn spawn_gameplay_ui(
             ..default()
         },
         BackgroundColor(GAMEPLAY_UI_BACKGROUND.with_alpha(0.5)),
+        DespawnOnExit(Screen::Gameplay),
     ))
     .with_children(|ui| {
         ui.spawn(stat_container("Hearts Container"))
