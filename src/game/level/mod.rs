@@ -115,12 +115,6 @@ pub fn spawn_level(
         ))
         .id();
     use Level::*;
-    commands.spawn(
-        (Sprite {
-            image: level_assets.health_ui.clone(),
-            ..default()
-        }),
-    );
     match current_level.get() {
         Foo => {
             commands.entity(lev_entity).insert((children![
