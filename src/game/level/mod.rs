@@ -84,6 +84,8 @@ impl Level {
 pub struct LevelAssets {
     #[dependency]
     music: Handle<AudioSource>,
+    #[dependency]
+    health_ui: Handle<Image>,
 }
 
 impl FromWorld for LevelAssets {
@@ -91,6 +93,7 @@ impl FromWorld for LevelAssets {
         let assets = world.resource::<AssetServer>();
         Self {
             music: assets.load("audio/music/Fluffing A Duck.ogg"),
+            health_ui: assets.load("textures/props/green_heart.png"),
         }
     }
 }
@@ -112,6 +115,12 @@ pub fn spawn_level(
         ))
         .id();
     use Level::*;
+    commands.spawn(
+        (Sprite {
+            image: level_assets.health_ui.clone(),
+            ..default()
+        }),
+    );
     match current_level.get() {
         Foo => {
             commands.entity(lev_entity).insert((children![

@@ -220,7 +220,7 @@ pub fn lifespan_projectile<HostilityComponent: Component + Default>(
     anim_assets: &AnimationAssets,
 ) -> impl Bundle {
     let lifespan_projectile_collider_radius: f32 = 2.;
-    let lifespan_projectile_life: f32 = 5.0; // seconds
+    let lifespan_projectile_life: f32 = 1.0; // seconds
     let speed: f32 = 500.0;
 
     let new_xy = (lifespan_projectile_collider_radius + thrower_radius + 1.0e-3) * direction + xy;
