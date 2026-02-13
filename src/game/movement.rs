@@ -143,9 +143,10 @@ fn on_collision_enemy(
             if has_friendly {
                 // Enemy got hit!
                 enemy.life = enemy.life.saturating_sub(1);
+                // only despawning friendly projectiles
+                commands.entity(proj_entity).despawn();
             }
             // nothing for enemy bullet to enemy(drain)
-            commands.entity(proj_entity).despawn();
             *is_c2_projectile = Some(true);
         } else {
             *is_c2_projectile = Some(false);

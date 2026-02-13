@@ -32,11 +32,10 @@ pub(super) fn plugin(app: &mut App) {
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, Reflect)]
 pub enum Level {
     #[default]
-    Foo,
-    Bar,
-    Baz,
-    Qux,
-    Quux,
+    Gates,
+    Maya,
+    Mura,
+    Narak,
 }
 
 impl SubStates for Level {
@@ -58,16 +57,15 @@ impl States for Level {
 impl FreelyMutableState for Level {}
 
 impl Level {
-    pub const LAST_LEVEL: Level = Level::Quux;
+    pub const LAST_LEVEL: Level = Level::Narak;
 
     pub fn next(&self) -> Self {
         use Level::*;
         match self {
-            Foo => Bar,
-            Bar => Baz,
-            Baz => Qux,
-            Qux => Quux,
-            Quux => panic!("No more next level: It is the last level"),
+            Gates => Maya,
+            Maya => Mura,
+            Mura => Narak,
+            Narak => panic!("No more next level: It is the last level"),
         }
     }
 
@@ -120,7 +118,7 @@ pub fn spawn_level(
         .id();
     use Level::*;
     match current_level.get() {
-        Foo => {
+        Gates => {
             commands.entity(lev_entity).insert((children![
                 player(100.0, &anim_assets),
                 eye_enemy((80., -40.).into(), &anim_assets),
@@ -133,7 +131,7 @@ pub fn spawn_level(
                 ),
             ],));
         }
-        Bar => {
+        Maya => {
             commands.entity(lev_entity).insert((children![
                 player(100.0, &anim_assets),
                 eye_enemy((-70., 20.).into(), &anim_assets),
@@ -146,7 +144,7 @@ pub fn spawn_level(
                 ),
             ],));
         }
-        Baz => {
+        Mura => {
             commands.entity(lev_entity).insert((children![
                 player(100.0, &anim_assets),
                 basic_enemy((-70., 20.).into(), &anim_assets),
@@ -159,20 +157,7 @@ pub fn spawn_level(
                 ),
             ],));
         }
-        Qux => {
-            commands.entity(lev_entity).insert((children![
-                player(100.0, &anim_assets),
-                basic_enemy((-70., 20.).into(), &anim_assets),
-                basic_enemy((-60., 0.).into(), &anim_assets),
-                basic_boss((140., 40.).into(), &anim_assets),
-                (
-                    Name::new("Gameplay Music"),
-                    DespawnOnExit(Menu::None),
-                    music(level_assets.music.clone()),
-                ),
-            ],));
-        }
-        Quux => {
+        Narak => {
             commands.entity(lev_entity).insert((children![
                 player(100.0, &anim_assets),
                 basic_enemy((-70., 20.).into(), &anim_assets),
