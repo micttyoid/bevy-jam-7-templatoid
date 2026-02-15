@@ -20,6 +20,10 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
+/// Tile property
+#[derive(Component)]
+pub struct ProjectilePassthrough(pub bool);
+
 // TODO:
 // Start throwing by two cases:
 // - A source gets to the desired location

@@ -34,10 +34,16 @@ use bevy::{
 };
 use bevy_ecs_tilemap::prelude::*;
 use thiserror::Error;
-use tiled::ObjectShape;
+use tiled::{ObjectShape, PropertyValue};
 
 use crate::{
-    game::{level::Level, player::PLAYER_Z_TRANSLATION},
+    game::{
+        level::{
+            Level,
+            projectiles::ProjectilePassthrough,
+        },
+        player::PLAYER_Z_TRANSLATION,
+    },   
     screens::Screen,
     utils::tiled::shaper::{PreSharedShape, shaper},
 };
