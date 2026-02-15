@@ -169,7 +169,7 @@ impl FromWorld for AnimationAssets {
                         assets.load("audio/sound_effects/mura/dmg3.ogg"),
                     ],
                     idle: assets.load("audio/sound_effects/mura/idle.ogg"),
-                    enemy: assets.load("textures/chars/snake.aseprite.aseprite"),
+                    enemy: assets.load("textures/chars/snake.aseprite"),
                 },
                 // boss4
                 narak: NarakAssets {

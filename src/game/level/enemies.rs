@@ -22,8 +22,8 @@ pub(super) fn plugin(app: &mut App) {
         Update,
         (
             check_enemy_death,
-            //update_moves,
-            //update_boss_moves,
+            update_moves,
+            update_boss_moves,
             enemy_shooting_system,
             boss_teleport_system,
         )
@@ -47,57 +47,57 @@ pub struct Enemy {
     pub attack_idx: usize,
 }
 
-// fn update_moves(
-//     time: Res<Time>,
-//     enemy_query: Query<(&mut LinearVelocity, &mut Enemy), Without<Boss>>,
-// ) {
-//     let d = time.delta();
-//     for (mut velocity, mut enemy) in enemy_query {
-//         let mut is_pop = false;
-//         if let Some(m) = enemy.moves.last_mut() {
-//             match m {
-//                 Move::UnitVelocity(v, timer) => {
-//                     if timer.is_finished() {
-//                         is_pop = true;
-//                         *velocity = LinearVelocity::ZERO;
-//                     } else {
-//                         timer.tick(d);
-//                         *velocity = *v;
-//                     }
-//                 } //_ => {},
-//             }
-//         } else {
-//             enemy.random_linear_moves(); // refill
-//         }
-//         enemy.moves.pop_if(|_| is_pop);
-//     }
-// }
+fn update_moves(
+    time: Res<Time>,
+    enemy_query: Query<(&mut LinearVelocity, &mut Enemy), Without<Boss>>,
+) {
+    let d = time.delta();
+    for (mut velocity, mut enemy) in enemy_query {
+        let mut is_pop = false;
+        if let Some(m) = enemy.moves.last_mut() {
+            match m {
+                Move::UnitVelocity(v, timer) => {
+                    if timer.is_finished() {
+                        is_pop = true;
+                        *velocity = LinearVelocity::ZERO;
+                    } else {
+                        timer.tick(d);
+                        *velocity = *v;
+                    }
+                } //_ => {},
+            }
+        } else {
+            enemy.random_linear_moves(); // refill
+        }
+        enemy.moves.pop_if(|_| is_pop);
+    }
+}
 
-// fn update_boss_moves(
-//     time: Res<Time>,
-//     enemy_query: Query<(&mut LinearVelocity, &mut Enemy), With<Boss>>,
-// ) {
-//     let d = time.delta();
-//     for (mut velocity, mut enemy) in enemy_query {
-//         let mut is_pop = false;
-//         if let Some(m) = enemy.moves.last_mut() {
-//             match m {
-//                 Move::UnitVelocity(v, timer) => {
-//                     if timer.is_finished() {
-//                         is_pop = true;
-//                         *velocity = LinearVelocity::ZERO;
-//                     } else {
-//                         timer.tick(d);
-//                         *velocity = *v;
-//                     }
-//                 } //_ => {},
-//             }
-//         } else {
-//             enemy.random_linear_moves(); // refill
-//         }
-//         enemy.moves.pop_if(|_| is_pop);
-//     }
-// }
+fn update_boss_moves(
+    time: Res<Time>,
+    enemy_query: Query<(&mut LinearVelocity, &mut Enemy), With<Boss>>,
+) {
+    let d = time.delta();
+    for (mut velocity, mut enemy) in enemy_query {
+        let mut is_pop = false;
+        if let Some(m) = enemy.moves.last_mut() {
+            match m {
+                Move::UnitVelocity(v, timer) => {
+                    if timer.is_finished() {
+                        is_pop = true;
+                        *velocity = LinearVelocity::ZERO;
+                    } else {
+                        timer.tick(d);
+                        *velocity = *v;
+                    }
+                } //_ => {},
+            }
+        } else {
+            enemy.random_linear_moves(); // refill
+        }
+        enemy.moves.pop_if(|_| is_pop);
+    }
+}
 
 impl Default for Enemy {
     fn default() -> Self {
@@ -694,7 +694,7 @@ pub fn basic_boss(xy: Vec2, anim_assets: &AnimationAssets) -> impl Bundle {
             animation: Animation::tag("Idle")
                 .with_repeat(AnimationRepeat::Loop)
                 .with_direction(AnimationDirection::Forward)
-                .with_speed(2.0),
+                .with_speed(1.0),
             aseprite: anim_assets.enemies.mura.enemy.clone(),
         },
         Sprite::default(),
