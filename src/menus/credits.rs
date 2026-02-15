@@ -55,16 +55,24 @@ fn spawn_credits_menu(mut commands: Commands, bg_assets: Res<InteractionAssets>)
 
 fn created_by() -> impl Bundle {
     grid(vec![
-        ["Joe Shmoe", "Implemented alligator wrestling AI"],
-        ["Jane Doe", "Made the music for the alien invasion"],
+        ["cabycat", "Art, UI"],
+        ["Facu Alvarez", "Music, SFX"],
+        ["izarma", "Programming, UI"],
+        ["Luke Yoo", "Programming"],
     ])
 }
 
 fn assets() -> impl Bundle {
     grid(vec![
-        ["Ducky sprite", "CC0 by Caz Creates Games"],
+        ["BoldPixels font", "CC BY-SA 4.0 by YukiPixels"], // using font of "CC BY-SA 4.0" does not require your project to be licensed under CC BY-SA. Only modifications to the font are affected.
         ["Button SFX", "CC0 by Jaszunio15"],
+        ["Clinks", "CC0 by Brian MacIntosh"],
         ["Music", "CC BY 3.0 by Kevin MacLeod"],
+        [
+            "Samarkan font",
+            "All rights reserved by Titivillus Foundry/Ethel Enterprises",
+        ],
+        ["Throw", "CC0 by qubodup"],
         [
             "Bevy logo",
             "All rights reserved by the Bevy Foundation, permission granted for splash screen use when unmodified",
