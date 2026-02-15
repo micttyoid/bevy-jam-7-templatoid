@@ -7,7 +7,7 @@ use bevy::{audio::Volume, input::common_conditions::input_just_pressed, prelude:
 use crate::{
     menus::Menu,
     screens::Screen,
-    theme::{interaction::InteractionAssets, prelude::*},
+    theme::{interaction::InteractionAssets, palette::BACKGROUND_DARK, prelude::*},
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -23,14 +23,29 @@ pub(super) fn plugin(app: &mut App) {
     );
 }
 
-fn spawn_settings_menu(mut commands: Commands, font_asset: Res<InteractionAssets>) {
+fn spawn_settings_menu(mut commands: Commands, menu_asset: Res<InteractionAssets>) {
+    commands.spawn((
+        Name::new("Background Image"),
+        GlobalZIndex(2),
+        Node {
+            position_type: PositionType::Absolute,
+            width: percent(100),
+            height: percent(100),
+            ..default()
+        },
+        ImageNode {
+            image: menu_asset.cover.clone(),
+            ..default()
+        },
+        DespawnOnExit(Menu::Settings),
+    ));
     commands.spawn((
         widget::ui_root("Settings Menu"),
-        GlobalZIndex(2),
+        GlobalZIndex(3),
         DespawnOnExit(Menu::Settings),
         children![
             widget::header("Settings"),
-            settings_grid(font_asset.settings_font.clone()),
+            settings_grid(menu_asset.settings_font.clone()),
             widget::button("Back", go_back_on_click),
         ],
     ));

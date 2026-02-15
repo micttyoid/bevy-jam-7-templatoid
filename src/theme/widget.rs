@@ -75,7 +75,7 @@ where
         text,
         action,
         Node {
-            width: px(380),
+            width: px(340),
             height: px(80),
             align_items: AlignItems::Center,
             justify_content: JustifyContent::Center,
@@ -207,7 +207,7 @@ where
                         Text(text),
                         TextFont {
                             font: font,
-                            font_size: 20.0,
+                            font_size: 40.0,
                             ..default()
                         },
                         TextColor(BUTTON_TEXT),
