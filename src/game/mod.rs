@@ -2,7 +2,7 @@
 //! purposes and should be replaced with your own game logic.
 //! Feel free to change the logic found here if you feel like tinkering around
 //! to get a feeling for the template.
-mod animation;
+pub mod animation;
 pub mod level;
 pub mod movement;
 pub mod player;

@@ -9,7 +9,7 @@ use bevy::{prelude::*, state::state::FreelyMutableState};
 
 use crate::{
     asset_tracking::LoadResource,
-    audio::music,
+    audio::{music, sound_effect},
     game::{
         animation::AnimationAssets,
         level::{
@@ -119,13 +119,26 @@ impl FromWorld for LevelAssets {
     fn from_world(world: &mut World) -> Self {
         let assets = world.resource::<AssetServer>();
         Self {
-            //music: assets.load("audio/music/Fluffing A Duck.ogg"),
             music: assets.load("audio/music/Feverdream.ogg"),
             ui_assets: assets.load("textures/props/gameplay_ui.png"),
             aim_cursor: assets.load("textures/props/cursor.png"),
             tutorial_assets: assets.load("textures/props/keyboard.png"),
             level_font: assets.load("fonts/boldspixels.ttf"),
         }
+    }
+}
+
+pub fn sfx_intro(
+    mut commands: Commands,
+    current_level: Res<State<Level>>,
+    anim_assets: Res<AnimationAssets>,
+) {
+    use Level::*;
+    match current_level.get() {
+        Mura => {
+            commands.spawn(sound_effect(anim_assets.enemies.mura.intro.clone()));
+        }
+        _ => {}
     }
 }
 
