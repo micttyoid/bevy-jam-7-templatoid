@@ -25,7 +25,7 @@ use tiled::{ObjectData, ObjectShape};
 
 use crate::{
     // TODO: asset_tracking::LoadResource,
-    game::player::PLAYER_Z_TRANSLATION,
+    demo::player::PLAYER_Z_TRANSLATION,
 };
 
 type Point2 = OPoint<f32, Const<2>>;

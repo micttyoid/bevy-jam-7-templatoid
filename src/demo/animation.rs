@@ -12,7 +12,7 @@ use std::time::Duration;
 use crate::{
     AppSystems, PausableSystems,
     audio::sound_effect,
-    game::{movement::MovementController, player::PlayerAssets},
+    demo::{movement::MovementController, player::PlayerAssets},
 };
 
 pub(super) fn plugin(app: &mut App) {
@@ -86,7 +86,7 @@ fn trigger_step_sound_effect(
     for animation in &mut step_query {
         if animation.is_walking()
             && animation.changed()
-            && (animation.frame == 2 || animation.frame == 5)
+            && animation.frame == 1
         {
             let rng = &mut rand::rng();
             let random_step = player_assets.steps.choose(rng).unwrap().clone();

@@ -38,7 +38,7 @@ use tiled::ObjectShape;
 
 use crate::{
     // TODO: asset_tracking::LoadResource,
-    game::player::PLAYER_Z_TRANSLATION,
+    demo::player::PLAYER_Z_TRANSLATION,
     utils::tiled::shaper::{PreSharedShape, shaper},
 };
 

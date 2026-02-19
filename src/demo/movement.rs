@@ -13,7 +13,7 @@
 //! purposes. If you want to move the player in a smoother way,
 //! consider using a [fixed timestep](https://github.com/bevyengine/bevy/blob/main/examples/movement/physics_in_fixed_timestep.rs).
 
-use crate::{AppSystems, PausableSystems, game::animation::Direction};
+use crate::{AppSystems, PausableSystems, demo::animation::Direction};
 use avian2d::{parry::utils::point_in_triangle::Orientation, prelude::*};
 use bevy::{prelude::*, window::PrimaryWindow};
 

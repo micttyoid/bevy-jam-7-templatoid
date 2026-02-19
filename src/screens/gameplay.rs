@@ -3,7 +3,7 @@
 use bevy::{input::common_conditions::input_just_pressed, prelude::*};
 
 use crate::{
-    Pause, game::level::spawn_level, menus::Menu, screens::Screen, utils::tiled::spawn_tiled_map,
+    Pause, demo::level::spawn_level, menus::Menu, screens::Screen, utils::tiled::spawn_tiled_map,
 };
 
 pub(super) fn plugin(app: &mut App) {

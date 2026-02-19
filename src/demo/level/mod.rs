@@ -5,7 +5,7 @@ use tiled::PropertyValue;
 use crate::{
     asset_tracking::LoadResource,
     audio::music,
-    game::player::{PlayerAssets, player},
+    demo::player::{PlayerAssets, player},
     screens::Screen,
     utils::tiled as utils_tiled,
 };

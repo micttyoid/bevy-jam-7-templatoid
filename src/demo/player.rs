@@ -8,7 +8,7 @@ use avian2d::prelude::*;
 use crate::{
     AppSystems, PausableSystems,
     asset_tracking::LoadResource,
-    game::{
+    demo::{
         animation::{Direction, PlayerAnimation},
         level::PlayerMarker,
         movement::MovementController,
@@ -22,7 +22,6 @@ pub(super) fn plugin(app: &mut App) {
     app.load_resource::<PlayerAssets>();
 
     // Record directional input as movement controls.
-
     app.add_systems(
         FixedUpdate,
         record_player_directional_input

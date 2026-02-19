@@ -1,6 +1,6 @@
 use bevy::{camera::*, prelude::*};
 
-use crate::game::player::Player;
+use crate::demo::player::Player;
 
 pub const FOLLOW_CAMERA_TRESHOLD: f32 = 100.0; // Determine based on the character speed
 pub const FOLLOW_CAMERA_MAX_SPEED: f32 = 1000.0;
