@@ -13,8 +13,8 @@
 //! purposes. If you want to move the player in a smoother way,
 //! consider using a [fixed timestep](https://github.com/bevyengine/bevy/blob/main/examples/movement/physics_in_fixed_timestep.rs).
 
-use crate::{AppSystems, PausableSystems};
-use avian2d::prelude::*;
+use crate::{AppSystems, PausableSystems, game::animation::Direction};
+use avian2d::{parry::utils::point_in_triangle::Orientation, prelude::*};
 use bevy::{prelude::*, window::PrimaryWindow};
 
 pub(super) fn plugin(app: &mut App) {
@@ -34,7 +34,8 @@ pub(super) fn plugin(app: &mut App) {
 #[reflect(Component)]
 pub struct MovementController {
     /// The direction the character wants to move in.
-    pub intent: Vec2,
+    //pub intent: Vec2,
+    pub intent: Direction,
 
     /// Maximum speed in world units per second.
     /// 1 world unit = 1 pixel when using the default 2D camera and no physics engine.
@@ -44,7 +45,8 @@ pub struct MovementController {
 impl Default for MovementController {
     fn default() -> Self {
         Self {
-            intent: Vec2::ZERO,
+            //intent: Vec2::ZERO,
+            intent: Direction::Nothing,
             max_speed: 1.0,
         }
     }
@@ -64,7 +66,7 @@ fn apply_movement(
 
 fn apply_movement(mut movement_query: Query<(&MovementController, &mut LinearVelocity)>) {
     for (controller, mut rb_vel) in movement_query.iter_mut() {
-        rb_vel.0 = controller.max_speed * controller.intent; // normal
+        rb_vel.0 = controller.max_speed * controller.intent.get_vec2(); // normal
     }
 }
 
