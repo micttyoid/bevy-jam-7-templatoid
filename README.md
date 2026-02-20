@@ -20,7 +20,13 @@ Run it on your browser
 bevy run web --open
 ```
 
-if you don't have Rust, here's [the instruction](https://rust-lang.org/tools/install/)
+If you want to run it on your desktop (not on your browser)
+```sh
+cargo run
+```
+
+If you don't have:
+- Rust compiler: here's [the instruction](https://rust-lang.org/tools/install/)
 
 # Note on the external tileset(tsx) used in a map file(tmx)
 
